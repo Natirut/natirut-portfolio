@@ -1,6 +1,9 @@
 export const profile = {
   name: "Natirut Duangpak",
+  first: "NATIRUT",
+  last: "DUANGPAK",
   title: "Senior Programmer | Software Developer",
+  roles: ["SENIOR PROGRAMMER", "SOFTWARE DEVELOPER", "SYSTEM ANALYST"],
   summary:
     "Software Developer with 5+ years of experience in developing and supporting business applications using C#, .NET and SQL Server. Experienced in system analysis, database management and business process improvement within manufacturing environments. Experienced in Microsoft 365 and Power Platform.",
   location: "Prachinburi, Thailand",
@@ -10,11 +13,19 @@ export const profile = {
   },
 };
 
+export const stats = [
+  { value: 5, suffix: "+", label: "Years Experience" },
+  { value: 4, suffix: "", label: "Skill Domains" },
+  { value: 3, suffix: "", label: "Certifications" },
+  { value: 3.37, suffix: "", label: "University GPA", decimals: 2 },
+];
+
 export const experience = [
   {
     company: "Canon Prachinburi",
     role: "Senior Programmer",
     period: "2020 — Present",
+    status: "ACTIVE",
     highlights: [
       "Developed and maintained internal business applications using C# and .NET technologies.",
       "Gathered user requirements and performed system analysis.",
@@ -31,15 +42,32 @@ export const education = [
     school: "Burapha University",
     degree: "B.Sc. in Software Engineering",
     period: "2016 — 2019",
-    detail: "GPA: 3.37",
+    detail: "GPA 3.37",
   },
 ];
 
-export const skills = {
-  Development: ["C#", ".NET Core", "JavaScript", "React", "Angular", "Vue.js"],
-  Database: ["SQL Server", "MySQL", "MongoDB"],
-  Automation: ["Git", "VBA", "DevExpress", "Docker"],
-};
+export const skills: { group: string; icon: string; items: string[] }[] = [
+  {
+    group: "Development",
+    icon: "code",
+    items: ["C#", ".NET Core", "JavaScript", "React", "Angular", "Vue.js"],
+  },
+  {
+    group: "Database",
+    icon: "database",
+    items: ["SQL Server", "MySQL", "MongoDB"],
+  },
+  {
+    group: "Automation & Tools",
+    icon: "cog",
+    items: ["Git", "VBA", "DevExpress", "Docker"],
+  },
+  {
+    group: "Microsoft 365 & Power Platform",
+    icon: "sparkles",
+    items: ["Power Apps", "Power Automate", "Power BI", "SharePoint"],
+  },
+];
 
 export const softSkills = [
   "System Analysis",
@@ -51,8 +79,6 @@ export const certifications = [
   "Advance Power Automate",
   "Cloud Essential",
   "UiPath (RPA)",
-  "Microsoft 365 & Power Platform",
-  "Power Apps | Power Automate | Power BI | SharePoint",
 ];
 
 export const languages = [
@@ -62,4 +88,24 @@ export const languages = [
     detail:
       "Able to read technical documentation and communicate in workplace environments.",
   },
+];
+
+export const marquee = [
+  "C#",
+  ".NET CORE",
+  "SQL SERVER",
+  "REACT",
+  "ANGULAR",
+  "VUE.JS",
+  "MONGODB",
+  "MYSQL",
+  "DOCKER",
+  "GIT",
+  "POWER AUTOMATE",
+  "POWER BI",
+  "POWER APPS",
+  "SHAREPOINT",
+  "UIPATH RPA",
+  "DEVEXPRESS",
+  "VBA",
 ];
