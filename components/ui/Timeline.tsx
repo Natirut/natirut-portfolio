@@ -9,7 +9,7 @@ export default function Timeline() {
           <Reveal variant="up">
             <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line/25 pb-5">
               <div>
-                <h3 className="text-shadow-soft font-display text-[clamp(2rem,3vw,2.6rem)] leading-none">{job.role}</h3>
+                <h3 className="text-shadow-soft font-display text-[clamp(1.7rem,2.4vw,2.1rem)] font-semibold leading-none tracking-[-0.04em]">{job.role}</h3>
                 <p className="eyebrow mt-3 text-fg/70">{job.company}</p>
               </div>
               <div className="flex flex-col items-end gap-2">

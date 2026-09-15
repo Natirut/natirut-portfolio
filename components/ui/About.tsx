@@ -7,9 +7,9 @@ export default function About() {
   return (
     <div className="space-y-8">
       <Reveal variant="up" delay={80}>
-        <p className="text-shadow-soft font-display text-[clamp(1.4rem,2.2vw,1.9rem)] leading-[1.3] text-fg/95">
+        <p className="text-shadow-soft text-[clamp(1.15rem,1.7vw,1.4rem)] font-medium leading-[1.45] tracking-[-0.02em] text-fg/95">
           Five years turning factory processes into dependable software — from{" "}
-          <span className="italic">requirements</span> to <span className="italic">databases</span>{" "}
+          <span className="text-gradient">requirements</span> to <span className="text-gradient">databases</span>{" "}
           to the people who use them every day.
         </p>
       </Reveal>
@@ -28,7 +28,7 @@ export default function About() {
         {stats.map((stat, i) => (
           <Reveal key={stat.label} variant="up" delay={220 + i * 80}>
             <div className={`pt-5 ${i > 0 ? "sm:border-l sm:border-line/20 sm:pl-5" : ""} pb-2`}>
-              <p className="font-display text-[3.2rem] leading-none">
+              <p className="font-display text-[2.6rem] font-semibold leading-none tracking-[-0.05em] tabular-nums">
                 <Counter
                   value={stat.value}
                   suffix={stat.suffix}

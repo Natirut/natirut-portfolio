@@ -7,7 +7,7 @@
  *  - The swap happens through a rotated halftone dot screen that blooms outward
  *    from the focus, with a coloured rim on each dot — the print aesthetic of
  *    the reference piece, re-imagined as a data transition.
- *  - Then: soft highlight roll-off, sRGB encode, film grain, gentle vignette.
+ *  - Output stays linear HDR; bloom and grading happen in postfx.ts.
  */
 export const compositorVertex = /* glsl */ `
   varying vec2 vUv;
@@ -44,17 +44,6 @@ export const compositorFragment = /* glsl */ `
       acc += texture2D(tex, clamp(q, 0.001, 0.999)).rgb;
     }
     return acc / float(N);
-  }
-
-  // soft shoulder: linear below 0.75, smoothly compressed above
-  vec3 rolloff(vec3 c) {
-    vec3 x = max(c, 0.0);
-    vec3 hi = 0.75 + 0.25 * (1.0 - exp(-(x - 0.75) / 0.25));
-    return mix(x, hi, step(0.75, x));
-  }
-
-  vec3 toSRGB(vec3 c) {
-    return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c));
   }
 
   void main() {
@@ -113,17 +102,6 @@ export const compositorFragment = /* glsl */ `
       // a thin white flash at the heart of the dive
       col += vec3(1.0) * smoothstep(0.35, 0.0, d) * pow(pulse, 8.0) * 0.25;
     }
-
-    col = rolloff(col);
-    col = toSRGB(col);
-
-    // print grain
-    float grain = hash(vUv * uRes + fract(uTime * 17.0) * 100.0) - 0.5;
-    col += grain * 0.028;
-
-    // vignette
-    vec2 vq = (vUv - 0.5) * vec2(aspect, 1.0);
-    col *= mix(0.84, 1.0, smoothstep(1.25, 0.3, length(vq)));
 
     gl_FragColor = vec4(col, 1.0);
   }

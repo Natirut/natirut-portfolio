@@ -19,7 +19,7 @@ export default function Contact() {
         >
           <span className="eyebrow text-fg/55">Email</span>
           <span className="mt-3 flex items-center justify-between gap-4">
-            <span className="text-shadow-soft break-all font-display text-[clamp(1.6rem,3.2vw,2.8rem)] leading-tight">
+            <span className="text-shadow-soft break-all font-display text-[clamp(1.3rem,2.4vw,2.1rem)] font-semibold leading-tight tracking-[-0.04em]">
               <span className="link-draw">{profile.contact.email}</span>
             </span>
             <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full border border-line/40 transition-all duration-500 group-hover:rotate-45 group-hover:bg-fg group-hover:text-navy">
@@ -33,13 +33,13 @@ export default function Contact() {
         <div className="grid gap-6 sm:grid-cols-2">
           <a href={`tel:${profile.contact.phone.replace(/-/g, "")}`} className="group">
             <span className="eyebrow text-fg/55">Phone</span>
-            <span className="mt-2 block font-display text-[1.7rem]">
+            <span className="mt-2 block font-display text-[1.25rem] font-medium tracking-[-0.03em]">
               <span className="link-draw">{profile.contact.phone}</span>
             </span>
           </a>
           <div>
             <span className="eyebrow text-fg/55">Based in</span>
-            <span className="mt-2 block font-display text-[1.7rem]">{profile.location}</span>
+            <span className="mt-2 block font-display text-[1.25rem] font-medium tracking-[-0.03em]">{profile.location}</span>
           </div>
         </div>
       </Reveal>

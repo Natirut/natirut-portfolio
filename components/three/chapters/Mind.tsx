@@ -4,7 +4,7 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { simplexNoise } from "@/lib/glsl";
-import { Backdrop, Dust, Halo } from "../parts/Atmosphere";
+import { AstroRing, Backdrop, Dust, Halo } from "../parts/Atmosphere";
 import { M } from "../materials";
 import { chapterTimeline, isActive, rigCamera, stage, type ChapterProps } from "../stage";
 
@@ -116,67 +116,6 @@ function Plasma() {
   return (
     <mesh material={material}>
       <icosahedronGeometry args={[0.42, 24]} />
-    </mesh>
-  );
-}
-
-/** Flat engraved astrolabe ring: tick scales and pseudo-glyph bands. */
-function AstroRing({ radius, width, color = "#ffd79a", speed = 0.05, seed = 1 }: { radius: number; width: number; color?: string; speed?: number; seed?: number }) {
-  const ref = useRef<THREE.Mesh>(null);
-  const material = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        uniforms: {
-          uColor: { value: new THREE.Color(color).multiplyScalar(0.8) },
-          uInner: { value: radius - width / 2 },
-          uOuter: { value: radius + width / 2 },
-          uSeed: { value: seed },
-          uTime: { value: 0 },
-        },
-        vertexShader: /* glsl */ `
-          varying vec2 vPos;
-          void main() { vPos = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
-        `,
-        fragmentShader: /* glsl */ `
-          uniform vec3 uColor; uniform float uInner, uOuter, uSeed, uTime;
-          varying vec2 vPos;
-          float hash(float n) { return fract(sin(n * 91.345 + uSeed) * 47453.5453); }
-          void main() {
-            float r = length(vPos);
-            float a = atan(vPos.y, vPos.x) / 6.28318 + 0.5;
-            float t = (r - uInner) / (uOuter - uInner);
-            float fwR = fwidth(t);
-            float border = (1.0 - smoothstep(0.0, fwR * 1.5, t)) + (1.0 - smoothstep(0.0, fwR * 1.5, 1.0 - t));
-            border += 1.0 - smoothstep(0.0, fwR * 1.2, abs(t - 0.32));
-
-            float ticks = a * 360.0;
-            float fwT = fwidth(ticks);
-            float tick = (1.0 - smoothstep(0.0, fwT * 1.2, min(fract(ticks), 1.0 - fract(ticks)))) * step(t, 0.3) * step(0.08, t);
-            float major = (1.0 - smoothstep(0.0, fwT * 6.0, min(fract(ticks / 10.0), 1.0 - fract(ticks / 10.0)) * 10.0)) * step(t, 0.32);
-
-            // glyph band: blocky dashes like engraved script
-            float cell = floor(a * 140.0);
-            float gx = fract(a * 140.0);
-            float glyph = step(0.45, hash(cell)) * step(0.15, gx) * step(gx, 0.85) * step(0.46, t) * step(t, 0.82);
-            glyph *= step(0.3, hash(cell + floor(t * 4.0) * 13.0));
-
-            float ink = clamp(border + tick * 0.7 + major + glyph * 0.55, 0.0, 1.0);
-            gl_FragColor = vec4(uColor * ink, ink * 0.9);
-          }
-        `,
-      }),
-    [color, radius, width, seed]
-  );
-  useFrame(() => {
-    if (ref.current) ref.current.rotation.z = stage.time * speed;
-  });
-  return (
-    <mesh ref={ref} material={material}>
-      <ringGeometry args={[radius - width / 2, radius + width / 2, 256, 1]} />
     </mesh>
   );
 }

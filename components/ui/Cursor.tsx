@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-/** Difference-blended reticle that inverts over whatever is beneath it. */
+/** Glowing reticle that trails the native pointer and swells over links. */
 export default function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
@@ -44,9 +44,12 @@ export default function Cursor() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[150] hidden mix-blend-difference [@media(hover:hover)and(pointer:fine)]:block">
-      <div ref={ringRef} className="absolute h-9 w-9 rounded-full border border-white/80" />
-      <div ref={dotRef} className="absolute h-1 w-1 rounded-full bg-white" />
+    <div className="pointer-events-none fixed inset-0 z-[150] hidden [@media(hover:hover)_and_(pointer:fine)]:block">
+      <div
+        ref={ringRef}
+        className="absolute h-9 w-9 rounded-full border border-signal/80 shadow-[0_0_14px_rgba(143,248,255,0.45),inset_0_0_8px_rgba(143,248,255,0.25)]"
+      />
+      <div ref={dotRef} className="absolute h-1 w-1 rounded-full bg-signal shadow-[0_0_8px_2px_rgba(143,248,255,0.8)]" />
     </div>
   );
 }

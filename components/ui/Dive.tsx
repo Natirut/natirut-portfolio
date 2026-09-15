@@ -45,7 +45,7 @@ export default function Dive({
       <div className="sticky top-0 flex h-[100svh] items-center justify-center px-8">
         <div ref={textRef} className="text-center text-fg opacity-0 will-change-[opacity,transform,filter]">
           <p className="eyebrow mb-5 text-fg/75">{label}</p>
-          <p className="text-shadow-soft font-display text-[clamp(2.4rem,6.5vw,6rem)] leading-[0.95]">
+          <p className="text-shadow-soft font-display text-[clamp(2rem,5vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.05em]">
             {line}
           </p>
         </div>

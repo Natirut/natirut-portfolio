@@ -1,15 +1,14 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import Android from "../models/Android";
-import Chip from "../models/Chip";
+import Helmet from "../models/Helmet";
 import Blueprint from "../models/Blueprint";
 import { Backdrop } from "../parts/Atmosphere";
 import { chapterTimeline, isActive, rigCamera, stage, type ChapterProps } from "../stage";
 
-/** 04 — On the record: the android, drawn up as an engineering blueprint. */
+/** 04 — On the record: the helmet, drawn up as an engineering blueprint. */
 
 const LINE = "#eaf4ff";
 const FILL = "#1552aa";
@@ -154,7 +153,7 @@ export default function Schematic({ index, camera }: ChapterProps) {
     if (!isActive(index)) return;
     const t = stage.time;
     const { arrive, drift } = chapterTimeline(index);
-    stage.focus[index].set(0, 1.0, 0.45);
+    stage.focus[index].set(0, 0.2, 0.9);
     stage.anchor[index].set(0, 0.2, 0);
 
     // the drawing prints from the base upward
@@ -176,10 +175,11 @@ export default function Schematic({ index, camera }: ChapterProps) {
       <Drafting index={index} />
 
       <group ref={turntable}>
-        <Blueprint clip={clip} line={LINE} fill={FILL}>
-          <Android index={index} position={[0, -0.05, 0]} />
-          <Chip position={[-1.35, -1.45, 1.2]} scale={0.9} glow={false} />
-        </Blueprint>
+        <Suspense fallback={null}>
+          <Blueprint clip={clip} line={LINE} fill={FILL}>
+            <Helmet index={index} position={[0, -0.2, 0]} />
+          </Blueprint>
+        </Suspense>
       </group>
 
       <mesh ref={scan} rotation={[-Math.PI / 2, 0, 0]}>

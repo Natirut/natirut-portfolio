@@ -1,32 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Serif, JetBrains_Mono, Inter_Tight } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import SceneWrapper from "@/components/three/SceneWrapper";
 import Preloader from "@/components/ui/Preloader";
 import Cursor from "@/components/ui/Cursor";
 import Hud from "@/components/ui/Hud";
 import SmoothScroll from "@/components/ui/SmoothScroll";
+import CopyGuard from "@/components/ui/CopyGuard";
 
-const display = Instrument_Serif({
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-mono",
-  display: "swap",
-});
-
-const sans = Inter_Tight({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+// Geist (by Vercel), self-hosted from app/fonts under the SIL Open Font License, no CDN.
+const sans = localFont({
+  src: [{ path: "./fonts/Geist-Variable.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-sans",
   display: "swap",
+  fallback: ["-apple-system", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
+});
+
+const mono = localFont({
+  src: [{ path: "./fonts/GeistMono-Variable.woff2", weight: "100 900", style: "normal" }],
+  variable: "--font-mono",
+  display: "swap",
+  fallback: ["ui-monospace", "SFMono-Regular", "Consolas", "monospace"],
 });
 
 export const metadata: Metadata = {
@@ -52,7 +46,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b5fc4",
+  themeColor: "#030b22",
 };
 
 export default function RootLayout({
@@ -63,9 +57,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${mono.variable} ${sans.variable}`}
+      className={`${mono.variable} ${sans.variable}`}
     >
       <body className="font-sans antialiased">
+        <CopyGuard />
         <Preloader />
         <SmoothScroll />
         <SceneWrapper />

@@ -7,7 +7,7 @@ export default function Section({
   index,
   kicker,
   title,
-  italic,
+  accent,
   tone = "dark",
   wide = false,
   children,
@@ -16,7 +16,7 @@ export default function Section({
   index: string;
   kicker: string;
   title: string;
-  italic?: string;
+  accent?: string;
   tone?: "dark" | "light";
   wide?: boolean;
   children: ReactNode;
@@ -33,8 +33,8 @@ export default function Section({
             <span className="h-px w-10 bg-fg/40" />
             <span className="eyebrow text-fg/60">{kicker}</span>
           </div>
-          <h2 className="text-shadow-soft mb-10 font-display text-[clamp(2.8rem,6vw,5.4rem)] leading-[0.92] tracking-[-0.015em]">
-            {title} {italic && <span className="italic">{italic}</span>}
+          <h2 className="text-shadow-soft mb-10 font-display text-[clamp(2.2rem,4.4vw,4rem)] font-semibold leading-[1.02] tracking-[-0.045em]">
+            {title} {accent && <span className="text-gradient">{accent}</span>}
           </h2>
         </Reveal>
         {children}

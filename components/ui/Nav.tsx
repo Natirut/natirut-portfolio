@@ -33,8 +33,8 @@ export default function Nav() {
           <span className="relative flex h-7 w-7 items-center justify-center rounded-full border border-fg/60">
             <span className="h-1.5 w-1.5 rounded-full bg-fg transition-transform duration-500 group-hover:scale-[2.2]" />
           </span>
-          <span className="font-display text-xl leading-none">
-            Natirut <span className="italic">D.</span>
+          <span className="font-display text-[17px] font-semibold leading-none tracking-[-0.03em]">
+            Natirut <span className="text-fg/55">D.</span>
           </span>
         </a>
 
