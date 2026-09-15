@@ -16,8 +16,10 @@ export default function Timeline() {
                 <span className="eyebrow text-fg/80">{job.period}</span>
                 <span className="eyebrow flex items-center gap-2 text-fg/60">
                   <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-signal opacity-60" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-signal" />
+                    {job.current && (
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-signal opacity-60" />
+                    )}
+                    <span className={`relative inline-flex h-2 w-2 rounded-full ${job.current ? "bg-signal" : "bg-fg/40"}`} />
                   </span>
                   {job.status}
                 </span>

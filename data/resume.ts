@@ -5,7 +5,7 @@ export const profile = {
   title: "Senior Programmer | Software Developer",
   roles: ["SENIOR PROGRAMMER", "SOFTWARE DEVELOPER", "SYSTEM ANALYST"],
   summary:
-    "Software Developer with 5+ years of experience in developing and supporting business applications using C#, .NET and SQL Server. Experienced in system analysis, database management and business process improvement within manufacturing environments. Experienced in Microsoft 365 and Power Platform.",
+    "Software Developer with 6 years of experience in developing and supporting business applications using C#, .NET and SQL Server. Experienced in system analysis, database management and business process improvement within manufacturing environments. Experienced in Microsoft 365 and Power Platform.",
   location: "Prachinburi, Thailand",
   contact: {
     email: "natirut.duangpak@gmail.com",
@@ -14,7 +14,7 @@ export const profile = {
 };
 
 export const stats = [
-  { value: 5, suffix: "+", label: "Years Experience" },
+  { value: 6, suffix: "", label: "Years Experience" },
   { value: 4, suffix: "", label: "Skill Domains" },
   { value: 3, suffix: "", label: "Certifications" },
   { value: 3.37, suffix: "", label: "University GPA", decimals: 2 },
@@ -24,8 +24,9 @@ export const experience = [
   {
     company: "Canon Prachinburi",
     role: "Senior Programmer",
-    period: "2020 — Present",
-    status: "ACTIVE",
+    period: "Jul 2020 — Jul 2026",
+    status: "6 years",
+    current: false,
     highlights: [
       "Developed and maintained internal business applications using C# and .NET technologies.",
       "Gathered user requirements and performed system analysis.",

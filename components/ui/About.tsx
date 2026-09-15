@@ -8,7 +8,7 @@ export default function About() {
     <div className="space-y-8">
       <Reveal variant="up" delay={80}>
         <p className="text-shadow-soft text-[clamp(1.15rem,1.7vw,1.4rem)] font-medium leading-[1.45] tracking-[-0.02em] text-fg/95">
-          Five years turning factory processes into dependable software — from{" "}
+          Six years turning factory processes into dependable software — from{" "}
           <span className="text-gradient">requirements</span> to <span className="text-gradient">databases</span>{" "}
           to the people who use them every day.
         </p>
