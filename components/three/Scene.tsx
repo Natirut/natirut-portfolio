@@ -1,132 +1,186 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Stars, Grid } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { Canvas, createPortal, useFrame, useThree } from "@react-three/fiber";
+import { PerformanceMonitor, useFBO } from "@react-three/drei";
 import * as THREE from "three";
-import { scrollState, damp } from "@/lib/scroll";
-import AICore from "./AICore";
-import Rings from "./Rings";
-import NeuralField from "./NeuralField";
-import DataStreams from "./DataStreams";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { CHAPTER_COUNT, damp, scrollState, smoothstep } from "@/lib/scroll";
+import { stage, type ChapterProps } from "./stage";
+import { compositorFragment, compositorVertex } from "./compositor";
+import HeroSky from "./chapters/HeroSky";
+import Mind from "./chapters/Mind";
+import Assembly from "./chapters/Assembly";
+import Hand from "./chapters/Hand";
+import Schematic from "./chapters/Schematic";
+import Reach from "./chapters/Reach";
 
-/** Drives the camera from scroll position + pointer parallax. */
-function CameraRig() {
-  const target = useMemo(() => new THREE.Vector3(), []);
+const CHAPTERS: React.ComponentType<ChapterProps>[] = [HeroSky, Mind, Assembly, Hand, Schematic, Reach];
+
+/** Accent colour of the halftone rim for each dive (from chapter i into i+1). */
+const RIMS = ["#9ff6ff", "#ffc877", "#fff1c9", "#8fd8ff", "#ffd49a", "#ffffff"];
+
+const project = new THREE.Vector3();
+
+function Director({ high }: { high: boolean }) {
+  const gl = useThree((s) => s.gl);
+  const size = useThree((s) => s.size);
+
+  stage.high = high;
+
+  const scenes = useMemo(() => CHAPTERS.map(() => new THREE.Scene()), []);
+  const cameras = useMemo(
+    () => CHAPTERS.map(() => new THREE.PerspectiveCamera(34, 1, 0.05, 400)),
+    []
+  );
+
+  useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scenes.forEach((s) => {
+      s.environment = env;
+    });
+    pmrem.dispose();
+    return () => env.dispose();
+  }, [gl, scenes]);
+
+  const samples = high ? 2 : 0;
+  const fboA = useFBO({ samples, depthBuffer: true });
+  const fboB = useFBO({ samples, depthBuffer: true });
+
+  const quad = useMemo(() => {
+    const material = new THREE.ShaderMaterial({
+      vertexShader: compositorVertex,
+      fragmentShader: compositorFragment,
+      depthTest: false,
+      depthWrite: false,
+      toneMapped: false,
+      uniforms: {
+        tA: { value: null },
+        tB: { value: null },
+        uMix: { value: 0 },
+        uTime: { value: 0 },
+        uFocus: { value: new THREE.Vector2(0.5, 0.5) },
+        uAnchor: { value: new THREE.Vector2(0.5, 0.5) },
+        uRes: { value: new THREE.Vector2(1, 1) },
+        uRim: { value: new THREE.Color() },
+        uVelocity: { value: 0 },
+      },
+    });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+    mesh.frustumCulled = false;
+    const scene = new THREE.Scene();
+    scene.add(mesh);
+    return { scene, material, camera: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1) };
+  }, []);
 
   useFrame((state, delta) => {
-    const dt = Math.min(delta, 0.1);
-    const p = scrollState.progress;
+    const dt = Math.min(delta, 1 / 20);
+    stage.time += dt;
+    stage.g = damp(stage.g, scrollState.chapter, 6, dt);
+    if (Math.abs(stage.g - scrollState.chapter) < 1e-4) stage.g = scrollState.chapter;
+    stage.px = damp(stage.px, state.pointer.x, 3, dt);
+    stage.py = damp(stage.py, state.pointer.y, 3, dt);
 
-    // A gentle arc through the scene as the page scrolls.
-    const wantX = Math.sin(p * Math.PI * 1.6) * 3.4 + state.pointer.x * 0.9;
-    const wantY = 0.2 + p * 2.2 + state.pointer.y * 0.6;
-    const wantZ = 7.2 + p * 4.5;
+    const aspect = size.width / size.height;
+    stage.aspect = aspect;
+    const wide = aspect > 1.15;
+    cameras.forEach((cam) => {
+      // frame the subject in the right half on wide screens, upper half on tall ones
+      const fullH = 1000;
+      const fullW = fullH * aspect;
+      const offX = wide ? -fullW * 0.17 : 0;
+      const offY = wide ? 0 : fullH * 0.1;
+      if (
+        cam.aspect !== aspect ||
+        !cam.view ||
+        cam.view.offsetX !== offX ||
+        cam.view.offsetY !== offY
+      ) {
+        cam.aspect = aspect;
+        cam.setViewOffset(fullW, fullH, offX, offY, fullW, fullH);
+        cam.updateProjectionMatrix();
+      }
+    });
 
-    state.camera.position.x = damp(state.camera.position.x, wantX, 2.2, dt);
-    state.camera.position.y = damp(state.camera.position.y, wantY, 2.2, dt);
-    state.camera.position.z = damp(state.camera.position.z, wantZ, 2.2, dt);
+    const g = Math.max(0, Math.min(CHAPTER_COUNT - 1, stage.g));
+    const i = Math.min(CHAPTER_COUNT - 1, Math.floor(g));
+    const f = g - i;
+    const hasNext = i < CHAPTER_COUNT - 1;
+    const mix = hasNext ? smoothstep(0.34, 0.8, f) : 0;
 
-    target.set(0, p * 1.1, 0);
-    state.camera.lookAt(target);
-  });
+    gl.setRenderTarget(fboA);
+    gl.clear();
+    gl.render(scenes[i], cameras[i]);
 
-  return null;
-}
+    const u = quad.material.uniforms;
+    if (mix > 0.01) {
+      gl.setRenderTarget(fboB);
+      gl.clear();
+      gl.render(scenes[i + 1], cameras[i + 1]);
+      project.copy(stage.anchor[i + 1]).project(cameras[i + 1]);
+      u.uAnchor.value.set(project.x * 0.5 + 0.5, project.y * 0.5 + 0.5);
+    }
+    gl.setRenderTarget(null);
 
-/** The whole core assembly, which drifts aside as you scroll into the content. */
-function CoreAssembly({ quality }: { quality: "high" | "low" }) {
-  const ref = useRef<THREE.Group>(null);
+    project.copy(stage.focus[i]).project(cameras[i]);
+    const fx = THREE.MathUtils.clamp(project.x * 0.5 + 0.5, 0.05, 0.95);
+    const fy = THREE.MathUtils.clamp(project.y * 0.5 + 0.5, 0.05, 0.95);
+    u.uFocus.value.set(fx, fy);
 
-  useFrame((_, delta) => {
-    if (!ref.current) return;
-    const dt = Math.min(delta, 0.1);
-    const p = scrollState.progress;
-    const scale = 1 - Math.min(p * 0.9, 0.42);
-    ref.current.scale.setScalar(damp(ref.current.scale.x, scale, 2.5, dt));
-    ref.current.position.y = damp(ref.current.position.y, p * 1.9, 2.5, dt);
-  });
+    u.tA.value = fboA.texture;
+    u.tB.value = fboB.texture;
+    u.uMix.value = mix > 0.01 ? mix : 0;
+    u.uTime.value = stage.time;
+    u.uRes.value.set(size.width * state.viewport.dpr, size.height * state.viewport.dpr);
+    u.uRim.value.set(RIMS[i]);
+    u.uVelocity.value = damp(u.uVelocity.value, Math.min(1, Math.abs(scrollState.velocity) / 60), 4, dt);
+
+    gl.render(quad.scene, quad.camera);
+  }, 1);
 
   return (
-    <group ref={ref}>
-      <AICore detail={quality === "high" ? 20 : 10} />
-      <Rings />
-      <NeuralField count={quality === "high" ? 130 : 70} />
-    </group>
+    <>
+      {CHAPTERS.map((Chapter, k) => (
+        <Fragment key={k}>
+          {createPortal(<Chapter index={k} camera={cameras[k]} />, scenes[k], {
+            camera: cameras[k],
+          })}
+        </Fragment>
+      ))}
+    </>
   );
 }
 
 export default function Scene() {
-  // Client-only (this module is loaded with ssr:false), so reading the
-  // environment during the lazy initializer is safe.
-  const [quality] = useState<"high" | "low">(() => {
-    if (typeof window === "undefined") return "high";
+  const [high] = useState(() => {
+    if (typeof window === "undefined") return true;
     const smallScreen = window.innerWidth < 820;
     const weakCpu = (navigator.hardwareConcurrency ?? 8) <= 4;
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    return smallScreen || weakCpu || reduced ? "low" : "high";
+    return !(smallScreen || weakCpu);
   });
 
-  const high = quality === "high";
+  const maxDpr = typeof window === "undefined" ? 1 : Math.min(window.devicePixelRatio, high ? 1.75 : 1.25);
+  const [dpr, setDpr] = useState(maxDpr);
 
   return (
     <div className="fixed inset-0 z-0" aria-hidden>
       <Canvas
-        camera={{ position: [0, 0, 7.2], fov: 52 }}
-        dpr={high ? [1, 1.8] : [1, 1.25]}
-        gl={{ antialias: high, powerPreference: "high-performance" }}
+        dpr={dpr}
+        gl={{ antialias: false, powerPreference: "high-performance", alpha: false, stencil: false }}
+        onCreated={({ gl }) => {
+          gl.localClippingEnabled = true;
+          gl.setClearColor("#0b5fc4");
+        }}
       >
-        <color attach="background" args={["#04050c"]} />
-        <fog attach="fog" args={["#04050c", 9, 30]} />
-
-        <ambientLight intensity={0.35} />
-        <pointLight position={[6, 5, 6]} intensity={40} color="#00d9ff" />
-        <pointLight position={[-7, -4, -4]} intensity={30} color="#ff3ea5" />
-
-        <CameraRig />
-
-        <Suspense fallback={null}>
-          <CoreAssembly quality={quality} />
-          <DataStreams count={high ? 26 : 12} />
-
-          <Grid
-            position={[0, -4.2, 0]}
-            args={[40, 40]}
-            cellSize={0.7}
-            cellThickness={0.5}
-            cellColor="#12304a"
-            sectionSize={3.5}
-            sectionThickness={1.1}
-            sectionColor="#00d9ff"
-            fadeDistance={34}
-            fadeStrength={1.5}
-            infiniteGrid
-            followCamera={false}
-          />
-
-          <Stars
-            radius={70}
-            depth={45}
-            count={high ? 2600 : 1100}
-            factor={3.2}
-            saturation={0}
-            fade
-            speed={0.5}
-          />
-        </Suspense>
-
-        <EffectComposer enableNormalPass={false}>
-          <Bloom
-            intensity={high ? 1.5 : 0.9}
-            luminanceThreshold={0.18}
-            luminanceSmoothing={0.85}
-            mipmapBlur
-          />
-          <Vignette offset={0.22} darkness={0.92} />
-        </EffectComposer>
+        {/* step resolution down (and back up) to hold a smooth frame rate */}
+        <PerformanceMonitor
+          bounds={() => [48, 58]}
+          flipflops={4}
+          onDecline={() => setDpr((d) => Math.max(0.75, +(d - 0.25).toFixed(2)))}
+          onIncline={() => setDpr((d) => Math.min(maxDpr, +(d + 0.25).toFixed(2)))}
+        />
+        <Director high={high} />
       </Canvas>
     </div>
   );

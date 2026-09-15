@@ -1,36 +1,34 @@
-# Natirut Duangpak — 3D AI Portfolio
+# Natirut Duangpak — 3D Resume
 
-An interactive, futuristic portfolio built around a real-time **Three.js** scene: a shader-driven AI core wrapped in a neural network, orbiting gyroscope rings, an infinite grid horizon and bloom post-processing — with the résumé content layered on top as holographic HUD panels.
+A scroll-driven, cinematic resume. Six hand-built WebGL scenes, all set in a world of porcelain androids and gold circuitry. As you scroll, the camera **dives** into a focal point in each scene (the android's eye, the neural core, the processor), and the next scene blooms through a halftone-dot dissolve. The look borrows from editorial print: halftone clouds, engraved line work, serif type and hairline guides.
+
+Every model is built in code from Three.js primitives. There are no external 3D assets.
 
 **Live:** _(add your Vercel URL here after deploying)_
 
-## The 3D scene
+## The chapters
 
-| Element | How it works |
-| --- | --- |
-| **AI core** | Custom GLSL `ShaderMaterial` — simplex-noise vertex displacement plus a Fresnel rim and scanning energy bands, additively blended |
-| **Neural field** | ~130 nodes on a Fibonacci sphere, auto-wired with `lineSegments` wherever two nodes fall within range |
-| **Gyro rings** | Three tilted tori counter-rotating, each carrying a travelling data node |
-| **Data streams** | Vertical light streaks rising on a loop |
-| **Horizon** | drei `<Grid infiniteGrid>` with distance fade |
-| **Post-processing** | Selective bloom (`mipmapBlur`) + vignette via `@react-three/postprocessing` |
-| **Camera** | Scroll position and pointer parallax drive an exponentially damped camera rig |
+| # | Scene | Resume section |
+| --- | --- | --- |
+| 00 | **The Sky**: a porcelain android under a gilded, engraved halo, adrift in halftone clouds | Hero |
+| 01 | **The Mind**: a plasma heart inside a gold icosahedral lattice, astrolabe rings and a pulsing synapse web | Profile |
+| 02 | **The Work**: industrial robot arms welding a compute monolith inside scaffolding, with sparks | Experience |
+| 03 | **The Toolkit**: an articulated robotic hand offering a processor while skill modules orbit it | Skills |
+| 04 | **The Record**: the android redrawn as a blueprint that prints itself layer by layer | Credentials |
+| 05 | **The Reach**: the android on a classical column at golden hour, gazing at a glowing orb | Contact |
 
-## Interface details
+## How it works
 
-- Terminal **boot sequence** on first load
-- **Glitch** treatment on the name (pure CSS clip-path + RGB split)
-- Rotating **typewriter** job title
-- Custom **cursor** that expands over interactive targets
-- **HUD overlay** — corner brackets, vertical rails, live scroll telemetry, clock, scanline sweep
-- **Holo cards** that tilt toward the pointer with a radial sheen
-- Scroll-triggered reveals, count-up statistics, and an infinite tech marquee
-
-Performance and accessibility are handled: the scene drops to a lighter quality tier on small screens, weak CPUs, or when `prefers-reduced-motion` is set, and that same query skips the boot animation and flattens transitions.
+- **Director** ([components/three/Scene.tsx](components/three/Scene.tsx)): each chapter lives in its own `THREE.Scene` via `createPortal`. Every frame, only the current chapter (and the next one, during a dive) is rendered into multisampled half-float render targets.
+- **Compositor** ([components/three/compositor.ts](components/three/compositor.ts)): a full-screen shader that zooms scene A toward its focus with radial blur and chromatic fringe, grows scene B out of its anchor, and swaps them through a rotated halftone screen. It then applies highlight roll-off, grain and a vignette.
+- **Scroll mapping** ([components/ui/SmoothScroll.tsx](components/ui/SmoothScroll.tsx)): Lenis smooth scrolling plus keyframes taken from each section's DOM position. That way the camera rests while a section is on screen and dives in the spacers between sections.
+- **Camera rig** ([components/three/stage.ts](components/three/stage.ts)): arrive, rest and dive easing, pointer parallax, and an automatic pull-back on portrait screens.
+- **Blueprint shader** ([components/three/models/Blueprint.tsx](components/three/models/Blueprint.tsx)): re-renders any model as contour lines, cross-hatching, silhouette rims and edge lines, revealed by a clipping plane.
+- **Performance**: drei `PerformanceMonitor` steps the pixel ratio down or up to hold the frame rate. Inactive chapters skip their animation work, and smaller or low-core devices get a lighter tier.
 
 ## Tech stack
 
-Next.js 14 (App Router) · React 18 · TypeScript · Three.js · @react-three/fiber · @react-three/drei · @react-three/postprocessing · Tailwind CSS · lucide-react
+Next.js 14 (App Router) · React 18 · TypeScript · Three.js · @react-three/fiber · @react-three/drei · Lenis · Tailwind CSS · lucide-react
 
 ## Run locally
 
@@ -45,20 +43,23 @@ Open <http://localhost:3000>.
 
 ## Editing the content
 
-Every piece of résumé content lives in [`data/resume.ts`](data/resume.ts) — profile, stats, experience, skills, credentials and contact details. Edit that one file; no component changes needed.
+All resume content lives in [`data/resume.ts`](data/resume.ts). The one-line chapter captions and the "dive" lines are in [`app/page.tsx`](app/page.tsx).
 
 ## Deploy to Vercel
 
 1. Push to GitHub.
 2. Import the repository at [vercel.com/new](https://vercel.com/new).
-3. Next.js is auto-detected — no configuration required. Click **Deploy**.
+3. Next.js is detected automatically. Click **Deploy**.
 
 ## Project structure
 
 ```
-app/                 layout, page, global styles
-components/three/    Scene, AICore, Rings, NeuralField, DataStreams
-components/ui/       Boot, Hud, Cursor, Nav, Hero, sections, cards
-data/resume.ts       all résumé content
-lib/                 scroll store, GLSL noise
+app/                         layout, page, global styles, icon
+components/three/Scene.tsx   director: portals, render targets, compositor pass
+components/three/chapters/   HeroSky, Mind, Assembly, Hand, Schematic, Reach
+components/three/models/     Android, RobotHand, RobotArm, Chip, Blueprint
+components/three/parts/      Backdrop, halftone Clouds, Halo, Dust
+components/ui/               SmoothScroll, Hud, Nav, Hero, Dive, sections
+data/resume.ts               all resume content
+lib/                         scroll store, GLSL noise
 ```

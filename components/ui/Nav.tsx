@@ -1,96 +1,83 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
+import { CHAPTER_TONE, subscribeScroll } from "@/lib/scroll";
 
 const links = [
-  { href: "#about", label: "About", id: "about" },
-  { href: "#experience", label: "Experience", id: "experience" },
-  { href: "#skills", label: "Skills", id: "skills" },
-  { href: "#education", label: "Credentials", id: "education" },
-  { href: "#contact", label: "Contact", id: "contact" },
+  { href: "#about", label: "Profile" },
+  { href: "#experience", label: "Work" },
+  { href: "#skills", label: "Toolkit" },
+  { href: "#education", label: "Record" },
 ];
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState("");
+  const [tone, setTone] = useState<"dark" | "light">("dark");
+  const [active, setActive] = useState(0);
 
-  useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive(e.target.id);
-        });
-      },
-      { rootMargin: "-45% 0px -50% 0px" }
-    );
-    links.forEach((l) => {
-      const el = document.getElementById(l.id);
-      if (el) io.observe(el);
-    });
-    return () => io.disconnect();
-  }, []);
+  useEffect(
+    () =>
+      subscribeScroll((s) => {
+        const i = Math.min(CHAPTER_TONE.length - 1, Math.round(s.chapter));
+        setTone(CHAPTER_TONE[i]);
+        setActive(i);
+      }),
+    []
+  );
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 px-4">
-      <nav className="glass bracket mx-auto mt-4 flex max-w-4xl items-center justify-between rounded-xl px-5 py-3">
-        <a
-          href="#top"
-          className="font-display text-sm font-bold tracking-[0.2em] text-ink"
-        >
-          ND<span className="text-cyan">_</span>
+    <header className={`fixed inset-x-0 top-0 z-40 max-md:bg-gradient-to-b max-md:from-panel/80 max-md:to-transparent ${tone === "light" ? "tone-light" : "tone-dark"}`}>
+      <nav className="flex h-[68px] items-center justify-between px-9 text-fg transition-colors duration-700 sm:px-14">
+        <a href="#top" className="group flex items-center gap-3">
+          <span className="relative flex h-7 w-7 items-center justify-center rounded-full border border-fg/60">
+            <span className="h-1.5 w-1.5 rounded-full bg-fg transition-transform duration-500 group-hover:scale-[2.2]" />
+          </span>
+          <span className="font-display text-xl leading-none">
+            Natirut <span className="italic">D.</span>
+          </span>
         </a>
 
-        <ul className="hidden gap-7 font-mono text-[11px] uppercase tracking-[0.18em] md:flex">
-          {links.map((l) => (
+        <ul className="hidden items-center gap-8 md:flex">
+          {links.map((l, i) => (
             <li key={l.href}>
-              <a
-                href={l.href}
-                className={`relative transition-colors ${
-                  active === l.id
-                    ? "text-cyan"
-                    : "text-ink/50 hover:text-ink"
-                }`}
-              >
-                {l.label}
-                {active === l.id && (
-                  <span className="absolute -bottom-1.5 left-0 h-px w-full bg-cyan shadow-[0_0_8px_rgba(0,217,255,0.9)]" />
-                )}
+              <a href={l.href} className="eyebrow group flex items-center gap-2 text-fg/70 transition-colors hover:text-fg">
+                <span className={`h-1 w-1 rounded-full bg-fg transition-opacity ${active === i + 1 ? "opacity-100" : "opacity-0"}`} />
+                <span className="text-fg/40">0{i + 1}</span>
+                <span className="link-draw">{l.label}</span>
               </a>
             </li>
           ))}
         </ul>
 
-        <a
-          href="#contact"
-          className="hidden rounded-md border border-cyan/40 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-cyan transition-all hover:bg-cyan/10 hover:shadow-[0_0_18px_-4px_rgba(0,217,255,0.9)] md:block"
-        >
-          Connect
+        <a href="#contact" className="btn-solid hidden !py-2.5 md:inline-flex">
+          Get in touch <ArrowUpRight size={14} />
         </a>
 
         <button
-          className="text-ink md:hidden"
+          className="text-fg md:hidden"
           onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"
+          aria-expanded={open}
         >
-          {open ? <X size={20} /> : <Menu size={20} />}
+          {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </nav>
 
       {open && (
-        <ul className="glass mx-auto mt-2 max-w-4xl rounded-xl p-3 font-mono text-xs uppercase tracking-widest md:hidden">
-          {links.map((l) => (
-            <li key={l.href}>
-              <a
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="block rounded-lg px-3 py-2.5 text-ink/70 hover:bg-cyan/10 hover:text-cyan"
-              >
-                {l.label}
-              </a>
-            </li>
+        <div className="tone-dark mx-5 rounded-2xl bg-navy/90 p-3 backdrop-blur-xl md:hidden">
+          {[...links, { href: "#contact", label: "Contact" }].map((l, i) => (
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              className="flex items-baseline gap-4 rounded-xl px-4 py-3 text-white hover:bg-white/10"
+            >
+              <span className="eyebrow text-white/40">0{i + 1}</span>
+              <span className="font-display text-2xl">{l.label}</span>
+            </a>
           ))}
-        </ul>
+        </div>
       )}
     </header>
   );

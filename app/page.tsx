@@ -1,12 +1,12 @@
 import Nav from "@/components/ui/Nav";
 import Hero from "@/components/ui/Hero";
+import Dive from "@/components/ui/Dive";
 import Section from "@/components/ui/Section";
 import About from "@/components/ui/About";
 import Timeline from "@/components/ui/Timeline";
 import SkillsGrid from "@/components/ui/SkillsGrid";
 import Credentials from "@/components/ui/Credentials";
 import Contact from "@/components/ui/Contact";
-import Marquee from "@/components/ui/Marquee";
 import Footer from "@/components/ui/Footer";
 
 export default function Home() {
@@ -16,30 +16,33 @@ export default function Home() {
       <main className="relative z-10">
         <Hero />
 
-        <Section id="about" index="01" eyebrow="Identity" title="Profile">
+        <Dive label="Look closer" line="Every system starts as a thought." />
+
+        <Section id="about" index="01" kicker="The Mind" title="A mind for" italic="systems.">
           <About />
         </Section>
 
-        <Marquee />
+        <Dive label="Then" line="Thought becomes structure." />
 
-        <Section id="experience" index="02" eyebrow="Log" title="Experience">
+        <Section id="experience" index="02" kicker="The Work" title="Built on" italic="the floor.">
           <Timeline />
         </Section>
 
-        <Section id="skills" index="03" eyebrow="Modules" title="Tech Stack">
+        <Dive label="Then" line="Structure becomes capability." tone="light" />
+
+        <Section id="skills" index="03" kicker="The Toolkit" title="Tools in" italic="hand." tone="light" wide>
           <SkillsGrid />
         </Section>
 
-        <Section
-          id="education"
-          index="04"
-          eyebrow="Records"
-          title="Credentials"
-        >
+        <Dive label="For the record" line="Drawn up, signed off." />
+
+        <Section id="education" index="04" kicker="The Record" title="Credentials," italic="on paper.">
           <Credentials />
         </Section>
 
-        <Section id="contact" index="05" eyebrow="Uplink" title="Contact">
+        <Dive label="Finally" line="Now — let’s build yours." />
+
+        <Section id="contact" index="05" kicker="The Reach" title="Let’s build" italic="what’s next.">
           <Contact />
         </Section>
 

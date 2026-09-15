@@ -8,55 +8,40 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        void: "#04050c",
-        panel: "#0a0d1a",
-        cyan: {
-          DEFAULT: "#00d9ff",
-          soft: "#7ceaff",
-        },
-        violet: {
-          DEFAULT: "#7b5cff",
-        },
-        magenta: {
-          DEFAULT: "#ff3ea5",
-        },
-        ink: "#dfe7f5",
+        // tone-aware tokens, switched per section by .tone-dark / .tone-light
+        fg: "rgb(var(--fg) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
+        panel: "rgb(var(--panel) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        sky: "#1b8fe3",
+        navy: "#061a3f",
+        paper: "#f2ebdc",
+        gold: "#e9b45c",
+        signal: "#8ff8ff",
       },
       fontFamily: {
-        display: ["var(--font-display)", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
-        sans: ["var(--font-sans)", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       keyframes: {
-        marquee: {
-          "0%": { transform: "translateX(0)" },
-          "100%": { transform: "translateX(-50%)" },
+        rise: {
+          "0%": { transform: "translateY(110%)" },
+          "100%": { transform: "translateY(0)" },
         },
-        sweep: {
-          "0%": { transform: "translateY(-10vh)", opacity: "0" },
-          "10%": { opacity: "0.7" },
-          "90%": { opacity: "0.7" },
-          "100%": { transform: "translateY(110vh)", opacity: "0" },
+        nudge: {
+          "0%,100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(5px)" },
         },
         blink: {
           "0%,49%": { opacity: "1" },
           "50%,100%": { opacity: "0" },
         },
-        pulseRing: {
-          "0%": { transform: "scale(0.9)", opacity: "0.7" },
-          "100%": { transform: "scale(1.6)", opacity: "0" },
-        },
-        floaty: {
-          "0%,100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-8px)" },
-        },
       },
       animation: {
-        marquee: "marquee 28s linear infinite",
-        sweep: "sweep 7s linear infinite",
+        rise: "rise 1.2s cubic-bezier(0.16,1,0.3,1) both",
+        nudge: "nudge 2.2s ease-in-out infinite",
         blink: "blink 1s step-end infinite",
-        pulseRing: "pulseRing 2.4s ease-out infinite",
-        floaty: "floaty 4s ease-in-out infinite",
       },
     },
   },

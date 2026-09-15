@@ -1,75 +1,99 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { subscribeScroll } from "@/lib/scroll";
+import { CHAPTER_COUNT, CHAPTER_TONE, subscribeScroll } from "@/lib/scroll";
 
+const NAMES = ["The Sky", "The Mind", "The Work", "The Toolkit", "The Record", "The Reach"];
+
+/**
+ * Fixed chrome in the spirit of the reference: hairline guides, crosshair
+ * marks, a chapter counter and a progress rail. It also owns the legibility
+ * scrim (painted between the canvas and the copy), crossfading between a dark
+ * and a light wash per chapter.
+ */
 export default function Hud() {
+  const [chapter, setChapter] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [clock, setClock] = useState("--:--:--");
 
-  useEffect(() => subscribeScroll(setProgress), []);
+  useEffect(
+    () =>
+      subscribeScroll((s) => {
+        // quantise so React only re-renders when something visible changes
+        setChapter(Math.round(s.chapter * 200) / 200);
+        setProgress(Math.round(s.progress * 500) / 500);
+      }),
+    []
+  );
 
-  useEffect(() => {
-    const tick = () =>
-      setClock(
-        new Date().toLocaleTimeString("en-GB", { hour12: false })
-      );
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const pct = Math.round(progress * 100);
+  const current = Math.min(CHAPTER_COUNT - 1, Math.round(chapter));
+  const tone = CHAPTER_TONE[current];
+  // fade the scrim out mid-dive so the transition reads full-bleed
+  const f = chapter - Math.floor(chapter);
+  const diving = f > 0.3 && f < 0.85 ? Math.sin(((f - 0.3) / 0.55) * Math.PI) : 0;
+  const scrim = 1 - diving * 0.9;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-30">
-      {/* film grain + scanlines */}
-      <div className="scanlines absolute inset-0 opacity-[0.35] mix-blend-overlay" />
-      <div className="absolute inset-x-0 top-0 h-px animate-sweep bg-gradient-to-r from-transparent via-cyan/70 to-transparent" />
-
-      {/* corner brackets */}
-      <span className="absolute left-4 top-4 h-5 w-5 border-l border-t border-cyan/40" />
-      <span className="absolute right-4 top-4 h-5 w-5 border-r border-t border-cyan/40" />
-      <span className="absolute bottom-4 left-4 h-5 w-5 border-b border-l border-cyan/40" />
-      <span className="absolute bottom-4 right-4 h-5 w-5 border-b border-r border-cyan/40" />
-
-      {/* left rail */}
-      <div className="absolute left-5 top-1/2 hidden -translate-y-1/2 lg:block">
-        <p
-          className="font-mono text-[10px] uppercase tracking-[0.4em] text-cyan/45"
-          style={{ writingMode: "vertical-rl" }}
-        >
-          NATIRUT.DUANGPAK &nbsp;//&nbsp; AI.SYSTEMS.PORTFOLIO
-        </p>
+    <>
+      <div className="pointer-events-none fixed inset-0 z-[5]" aria-hidden>
+        <div
+          className="scrim-dark absolute inset-0 transition-opacity duration-700"
+          style={{ opacity: tone === "dark" ? scrim : 0 }}
+        />
+        <div
+          className="scrim-light absolute inset-0 transition-opacity duration-700"
+          style={{ opacity: tone === "light" ? scrim : 0 }}
+        />
       </div>
 
-      {/* right rail — scroll telemetry */}
-      <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 items-center gap-3 lg:flex lg:flex-col">
-        <span className="font-mono text-[10px] tracking-widest text-cyan/60">
-          {String(pct).padStart(3, "0")}%
-        </span>
-        <div className="h-40 w-px bg-cyan/15">
-          <div
-            className="w-px bg-gradient-to-b from-cyan to-violet"
-            style={{ height: `${pct}%` }}
-          />
+      <div
+        className={`pointer-events-none fixed inset-0 z-20 ${tone === "light" ? "tone-light" : "tone-dark"}`}
+        aria-hidden
+      >
+        <div className="text-fg transition-colors duration-700">
+          {/* guides */}
+          <span className="hair absolute bottom-0 left-5 top-0 w-px sm:left-8" />
+          <span className="hair absolute bottom-0 right-5 top-0 w-px sm:right-8" />
+          <span className="hair absolute left-0 right-0 top-[68px] h-px" />
+          <span className="hair absolute bottom-[52px] left-0 right-0 hidden h-px md:block" />
+
+          {/* crosshairs at the guide intersections */}
+          {[
+            "left-5 top-[68px] sm:left-8",
+            "right-5 top-[68px] sm:right-8",
+            "left-5 bottom-[52px] hidden md:block sm:left-8",
+            "right-5 bottom-[52px] hidden md:block sm:right-8",
+          ].map((pos) => (
+            <span key={pos} className={`absolute ${pos} -translate-x-1/2 translate-y-[-50%]`}>
+              <span className="absolute left-1/2 top-1/2 h-[11px] w-px -translate-x-1/2 -translate-y-1/2 bg-fg/70" />
+              <span className="absolute left-1/2 top-1/2 h-px w-[11px] -translate-x-1/2 -translate-y-1/2 bg-fg/70" />
+            </span>
+          ))}
+
+          {/* chapter counter */}
+          <div className="absolute bottom-[18px] left-10 hidden items-center gap-4 md:flex sm:left-14">
+            <span className="eyebrow text-fg/85">
+              {String(current + 1).padStart(2, "0")} / {String(CHAPTER_COUNT).padStart(2, "0")}
+            </span>
+            <span className="h-px w-8 bg-fg/40" />
+            <span className="overflow-hidden">
+              <span key={current} className="eyebrow block animate-rise text-fg/60">
+                {NAMES[current]}
+              </span>
+            </span>
+          </div>
+
+          {/* progress rail */}
+          <div className="absolute bottom-[22px] right-10 hidden items-center gap-4 md:flex sm:right-14">
+            <span className="eyebrow text-fg/60">Scroll</span>
+            <span className="relative h-px w-28 bg-fg/20">
+              <span className="absolute inset-y-0 left-0 bg-fg" style={{ width: `${progress * 100}%` }} />
+            </span>
+            <span className="eyebrow w-9 text-right text-fg/85">
+              {String(Math.round(progress * 100)).padStart(3, "0")}
+            </span>
+          </div>
         </div>
-        <span
-          className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan/35"
-          style={{ writingMode: "vertical-rl" }}
-        >
-          SCROLL DEPTH
-        </span>
       </div>
-
-      {/* bottom telemetry bar */}
-      <div className="absolute inset-x-0 bottom-0 hidden items-center justify-between px-10 pb-5 font-mono text-[10px] uppercase tracking-[0.25em] text-cyan/35 md:flex">
-        <span>LAT 14.05 N / LON 101.37 E — PRACHINBURI</span>
-        <span className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-          LINK STABLE · {clock}
-        </span>
-      </div>
-    </div>
+    </>
   );
 }
